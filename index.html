@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>KPI Dashboard</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    h1 { text-align: center; }
+    .kpi { margin: 1rem 0; }
+    ul { padding-left: 1.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Operational KPI Dashboard</h1>
+  <div id="kpi-container">Loading KPIs…</div>
+
+  <script>
+    async function fetchKPIs() {
+      try {
+        const res = await fetch('/api/kpis');
+        const data = await res.json();
+        render(data);
+      } catch (e) {
+        document.getElementById('kpi-container').innerText = 'Error loading KPIs';
+        console.error(e);
+      }
+    }
+
+    function render({ totalRecords, averageProcessingTime, recordsByCategory, recordsByDate }) {
+      const container = document.getElementById('kpi-container');
+      container.innerHTML = '';
+
+      // Simple KPI cards
+      const cards = [
+        { label: 'Total Records', value: totalRecords },
+        { label: 'Avg. Processing Time', value: averageProcessingTime }
+      ];
+      cards.forEach(({ label, value }) => {
+        const div = document.createElement('div');
+        div.className = 'kpi';
+        div.innerHTML = `<strong>${label}:</strong> ${value}`;
+        container.appendChild(div);
+      });
+
+      // Records by Category
+      const catDiv = document.createElement('div');
+      catDiv.className = 'kpi';
+      catDiv.innerHTML = '<strong>Records by Category:</strong>';
+      const ulCat = document.createElement('ul');
+      Object.entries(recordsByCategory).forEach(([cat, cnt]) => {
+        const li = document.createElement('li');
+        li.textContent = `${cat}: ${cnt}`;
+        ulCat.appendChild(li);
+      });
+      catDiv.appendChild(ulCat);
+      container.appendChild(catDiv);
+
+      // Records by Date
+      const dateDiv = document.createElement('div');
+      dateDiv.className = 'kpi';
+      dateDiv.innerHTML = '<strong>Records by Date:</strong>';
+      const ulDate = document.createElement('ul');
+      Object.entries(recordsByDate).forEach(([day, cnt]) => {
+        const li = document.createElement('li');
+        li.textContent = `${day}: ${cnt}`;
+        ulDate.appendChild(li);
+      });
+      dateDiv.appendChild(ulDate);
+      container.appendChild(dateDiv);
+    }
+
+    fetchKPIs();
+    setInterval(fetchKPIs, 5000); // refresh every 5s
+  </script>
+</body>
+</html>
